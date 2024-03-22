@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: taskSchedule
+      POSTGRES_PASSWORD: ContrTaskSchedule
+      POSTGRES_DB: db
+    ports:
+      - "4500:5432"
+    volumes:
+      - ./database/tables:/docker-entrypoint-initdb.d
