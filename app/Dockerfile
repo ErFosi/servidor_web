@@ -1,5 +1,5 @@
 # Usar una imagen oficial de Python como imagen base
-FROM python:3.9
+FROM python:3.10
 
 # Establecer el directorio de trabajo en el contenedor
 WORKDIR /code

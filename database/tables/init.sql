@@ -20,6 +20,6 @@ CREATE TABLE IF NOT EXISTS ubicaciones (
     id SERIAL PRIMARY KEY,
     latitud DOUBLE PRECISION NOT NULL,
     longitud DOUBLE PRECISION NOT NULL,
-    idActividad INT NOT NULL,
+    id_actividad INT NOT NULL,
     FOREIGN KEY (id_actividad) REFERENCES actividades(id)
 );

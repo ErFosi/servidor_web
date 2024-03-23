@@ -1,0 +1,11 @@
+pydantic
+uvicorn
+fastapi
+sqlalchemy
+bcrypt
+python-multipart
+firebase-admin
+Unidecode
+psycopg2
+passlib[bcrypt]
+python-jose[cryptography]

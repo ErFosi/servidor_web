@@ -25,7 +25,7 @@ class ActividadBase(BaseModel):
     fecha: date
 
 class ActividadCreate(ActividadBase):
-    id_usuario: int
+    pass
 
 
 class Actividad(ActividadBase):
@@ -42,9 +42,27 @@ class UsuarioBase(BaseModel):
 class UsuarioCreate(UsuarioBase):
     contraseña: str
 
+class AuthForm(BaseModel):
+    username: str
+    password: str
+
+
 class Usuario(UsuarioBase):
     id: int
     actividades: List[Actividad] = []
 
     class Config:
         orm_mode = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    id: str | None = None
+
+class TokenConUsuario(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    usuario: UsuarioBase

@@ -4,10 +4,8 @@ services:
   db:
     image: postgres
     restart: always
-    environment:
-      POSTGRES_USER: taskSchedule
-      POSTGRES_PASSWORD: ContrTaskSchedule
-      POSTGRES_DB: db
+    env_file: 
+      - credentials.env
     ports:
       - "4500:5432"
     volumes:
@@ -23,6 +21,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    environment:
-      DATABASE_URL: postgresql://taskSchedule:ContrTaskSchedule@db/db
+    env_file: 
+      - credentials.env
     command: uvicorn api.main:app --host 0.0.0.0 --reload
