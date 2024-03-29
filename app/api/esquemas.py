@@ -66,4 +66,3 @@ class TokenConUsuario(BaseModel):
     access_token: str
     refresh_token: str  # Nuevo campo para el refresh token
     token_type: str
-    usuario: UsuarioBase
