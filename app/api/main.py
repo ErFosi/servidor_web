@@ -89,8 +89,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "refresh_token": refresh_token,  # Incluir el refresh token en la respuesta
-        "usuario": usuario
+        "refresh_token": refresh_token
     }
 
 
