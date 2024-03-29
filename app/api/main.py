@@ -1,5 +1,6 @@
 from typing import Union
 from fastapi import FastAPI
+from google.auth import jwt
 from sqlalchemy.orm import Session
 from .database import SessionLocal
 from fastapi import Depends, HTTPException, status
@@ -8,7 +9,7 @@ from typing import List
 from .databaseORM import Usuario,Ubicacion,Actividad
 from .esquemas import *
 from . import crud
-from .oauth import obtener_usuario_actual,crear_token_acceso
+from .oauth import obtener_usuario_actual, crear_token_acceso, SECRET_KEY
 from datetime import datetime, timedelta
 
 app = FastAPI()
@@ -72,9 +73,57 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
             detail="Credenciales incorrectas",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    #access_token_expires = timedelta(minutes=30)
+
+    # Generar el token de acceso
+    access_token_expires = timedelta(minutes=30)  # O el tiempo que consideres adecuado
     access_token = crear_token_acceso(
         data={"sub": str(usuario.id)}
     )
-    return {"access_token": access_token, "token_type": "bearer", "usuario": usuario}
 
+    # Generar el refresh token
+    refresh_token_expires = timedelta(days=7)  # Los refresh tokens suelen tener una mayor duración
+    refresh_token = crear_token_acceso(  # Suponiendo que reutilizas la misma función con un parámetro adicional
+        data={"sub": str(usuario.id),"refresh":True}
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "refresh_token": refresh_token,  # Incluir el refresh token en la respuesta
+        "usuario": usuario
+    }
+
+
+"""
+@app.post("/refresh", response_model=Token)
+def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+    # Verificar la validez del refresh token aquí
+    # Esto podría involucrar verificar la firma del token, su expiración y si ha sido revocado
+    usuario_id = verificar_refresh_token(refresh_token)
+    if not usuario_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token inválido",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Generar un nuevo token de acceso
+    access_token_expires = timedelta(minutes=30)
+    access_token = crear_token_acceso(
+        data={"sub": str(usuario_id)},
+        expires_delta=access_token_expires
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+def verificar_refresh_token(refresh_token: str, db: Session):
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        usuario_id: str = payload.get("sub")
+        if usuario_id is None:
+            return None
+        # Aquí puedes añadir más verificaciones, como si el token ha sido revocado
+    except JWTError:
+        return None
+    return usuario_id
+    """

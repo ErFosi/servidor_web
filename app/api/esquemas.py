@@ -64,5 +64,6 @@ class TokenData(BaseModel):
 
 class TokenConUsuario(BaseModel):
     access_token: str
-    token_type: str = "bearer"
+    refresh_token: str  # Nuevo campo para el refresh token
+    token_type: str
     usuario: UsuarioBase
