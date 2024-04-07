@@ -18,14 +18,18 @@ class Ubicacion(UbicacionBase):
 
 class ActividadBase(BaseModel):
     nombre: str
-    tiempo: int = 0
-    categoria: str = "Otros"
-    start_time_millis: int 
-    is_playing: bool = False
-    fecha: date
+    tiempo: Optional[int] = 0
+    categoria: Optional[str] = "Otros"
+    start_time_millis: Optional[int]
+    is_playing: Optional[bool] = False
+    fecha: Optional[date] = date.today()
+    ubicaciones: List[UbicacionBase] = []
 
 class ActividadCreate(ActividadBase):
     pass
+
+class ActividadesList(BaseModel):
+    actividades: List[ActividadCreate]
 
 
 class Actividad(ActividadBase):
@@ -54,7 +58,13 @@ class Usuario(UsuarioBase):
     class Config:
         orm_mode = True
 
+class UsuarioResponse(BaseModel):
+    id: int
+    usuario: str
 
+    class Config:
+        orm_mode = True
+        
 class Token(BaseModel):
     access_token: str
     token_type: str

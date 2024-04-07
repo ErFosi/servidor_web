@@ -66,3 +66,24 @@ def crear_ubicacion(db: Session, ubicacion: esquemas.UbicacionCreate, id_activid
 
 def obtener_ubicaciones(db: Session, skip: int = 0, limit: int = 100):
     return db.query(databaseORM.Ubicacion).offset(skip).limit(limit).all()
+
+
+## sincronizar
+
+def eliminar_actividades_por_usuario(db: Session, usuario_id: int):
+    actividades = db.query(databaseORM.Actividad).filter(databaseORM.Actividad.id_usuario == usuario_id).all()
+    for actividad in actividades:
+        db.query(databaseORM.Ubicacion).filter(databaseORM.Ubicacion.id_actividad == actividad.id).delete()
+        db.delete(actividad)
+    db.commit()
+
+def crear_actividad_con_ubicaciones(db: Session, actividad_data: esquemas.ActividadCreate, usuario_id: int):
+    db_actividad = databaseORM.Actividad(**actividad_data.dict(exclude={"ubicaciones"}), id_usuario=usuario_id)
+    db.add(db_actividad)
+    db.commit()
+    db.refresh(db_actividad)
+    for ubicacion_data in actividad_data.ubicaciones:
+        db_ubicacion = databaseORM.Ubicacion(**ubicacion_data.dict(), id_actividad=db_actividad.id)
+        db.add(db_ubicacion)
+    db.commit()
+    return db_actividad

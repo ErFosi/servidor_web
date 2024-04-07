@@ -53,8 +53,9 @@ def obtener_usuario_actual(token: str = Depends(oauth2_scheme), db: Session = De
         detail="No se pudieron validar las credenciales",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    payload = verificar_token_acceso(token, credenciales_exception)
-    usuario_id: str = payload.get("sub")
+    print(verificar_token_acceso(token, credenciales_exception))
+    usuario_id: str = verificar_token_acceso(token, credenciales_exception)["id"]
+    print(usuario_id)
     usuario = crud.get_usuario(db, usuario_id=usuario_id)
     if usuario is None:
         raise credenciales_exception
