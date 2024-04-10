@@ -224,3 +224,25 @@ def verificar_refresh_token(refresh_token: str, db: Session):
         return None
     return usuario_id
     """
+
+@app.post("/subscribe_to_actividades/")
+async def subscribe_to_actividades(token: str):
+    try:
+        response = messaging.subscribe_to_topic([token], 'actividades')
+        return {"message": "Subscribed to actividades", "response": response}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    
+@app.post("/testactividades/")
+@app.get("/testactividades/")
+async def test_actividades():
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title="Nueva Actividad",
+            body="Hay una nueva actividad disponible.",
+        ),
+        topic="actividades",
+    )
+    response = messaging.send(message)
+    return {"message": "Message sent to topic /actividades", "response": response}
