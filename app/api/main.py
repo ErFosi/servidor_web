@@ -15,11 +15,37 @@ from fastapi.responses import FileResponse
 from .oauth import obtener_usuario_actual, crear_token_acceso, SECRET_KEY
 from datetime import datetime, timedelta
 import glob
+import firebase_admin
+from firebase_admin import credentials, messaging
+import google.auth
+from google.auth.transport.requests import Request
 
+
+
+
+#Firebase
+cred = credentials.Certificate()
+
+def _get_access_token():
+    """Retrieve a valid access token that can be used to authorize requests.
+
+    :return: Access token.
+    """
+    # This loads credentials from the GOOGLE_APPLICATION_CREDENTIALS environment variable
+    # or falls back to other authentication methods (e.g., credentials configured in gcloud CLI)
+    credentials, _ = google.auth.default(scopes=SCOPES)
+    
+    # Refresh the credentials to ensure you have a valid access token
+    request = Request()
+    credentials.refresh(request)
+
+    return credentials.token
 
 VALID_IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 app = FastAPI()
 image_folder = "/code/images"
+
+
 
 def get_db():
     db = SessionLocal()
@@ -27,6 +53,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 
 @app.post("/usuarios/", response_model=UsuarioResponse)
