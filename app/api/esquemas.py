@@ -74,5 +74,9 @@ class TokenData(BaseModel):
 
 class TokenConUsuario(BaseModel):
     access_token: str
-    refresh_token: str  # Nuevo campo para el refresh token
+    refresh_token: str 
     token_type: str
+
+
+class FirebaseClientToken(BaseModel):
+    fcm_client_token: str

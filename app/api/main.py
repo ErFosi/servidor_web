@@ -19,30 +19,58 @@ import firebase_admin
 from firebase_admin import credentials, messaging
 import google.auth
 from google.auth.transport.requests import Request
+from os import environ
+from google.oauth2 import service_account
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+import random
 
-
-
+app = FastAPI()
 
 #Firebase
-cred = credentials.Certificate()
+credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+firebase_credentials = credentials.Certificate(credentials_path)
+firebase_admin.initialize_app(firebase_credentials)
+mensajes_notificaciones = [
+    "El tiempo debe ser repartido en todo tipo de actividades, deporte formacion e incluso ocio.",
+    "Gastar demasiado tiempo en ocio es peligroso!",
+    "Apuntar el tiempo de cada tarea te puede ayudar a gestionar mejor tu dia a dia",
+    "El algoritmo de Shor es muy complejo!",
+    "Recuerda apuntar el tiempo invertido de tus tareas!",
+    "Ten un buen día y distribuye bien el tiempo!"
+]
 
-def _get_access_token():
-    """Retrieve a valid access token that can be used to authorize requests.
 
-    :return: Access token.
-    """
-    # This loads credentials from the GOOGLE_APPLICATION_CREDENTIALS environment variable
-    # or falls back to other authentication methods (e.g., credentials configured in gcloud CLI)
-    credentials, _ = google.auth.default(scopes=SCOPES)
-    
-    # Refresh the credentials to ensure you have a valid access token
-    request = Request()
-    credentials.refresh(request)
+# Función para enviar mensaje aleatorio
+def enviar_mensaje_aleatorio():
+    mensaje_aleatorio = random.choice(mensajes_notificaciones)
+    message = messaging.Message(
+        notification=messaging.Notification(
+            title="Recordatorio Importante",
+            body=mensaje_aleatorio,
+        ),
+        topic="actividades"
+    )
+    try:
+        response = messaging.send(message)
+        print(f"Mensaje enviado: {response}")
+    except Exception as e:
+        print(f"Error enviando mensaje: {str(e)}")
 
-    return credentials.token
+scheduler = AsyncIOScheduler()
+scheduler.add_job(
+    enviar_mensaje_aleatorio,
+    CronTrigger(hour='*/1'),  # Ejecutar todos los días a las 10:00 AM
+    timezone="UTC"  # Zona horaria de España
+)
+print("------------------AUTO NOTIFICATIONS ON-------------------")
+scheduler.start()
+
+
+
 
 VALID_IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-app = FastAPI()
+
 image_folder = "/code/images"
 
 
@@ -224,25 +252,39 @@ def verificar_refresh_token(refresh_token: str, db: Session):
         return None
     return usuario_id
     """
-
-@app.post("/subscribe_to_actividades/")
-async def subscribe_to_actividades(token: str):
+###----------------------Firebase------------------------###
+@app.post("/sub_a_act", tags=["Firebase"])
+async def subscribe_to_actividades(token: FirebaseClientToken,usuario_actual: Usuario = Depends(obtener_usuario_actual)):
     try:
-        response = messaging.subscribe_to_topic([token], 'actividades')
+        
+        token_string = token.fcm_client_token
+        print(token_string)
+        response = messaging.subscribe_to_topic([token_string], 'actividades')
+        
+        
         return {"message": "Subscribed to actividades", "response": response}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
     
-@app.post("/testactividades/")
-@app.get("/testactividades/")
-async def test_actividades():
+@app.post("/testactividades", tags=["Firebase"])
+async def test_actividades(usuario_actual: Usuario = Depends(obtener_usuario_actual)):
+    # Elegir un mensaje aleatorio de la lista
+    mensaje_aleatorio = random.choice(mensajes_notificaciones)
+    
+    # Crear el mensaje de FCM
     message = messaging.Message(
         notification=messaging.Notification(
-            title="Nueva Actividad",
-            body="Hay una nueva actividad disponible.",
+            title="Recordatorio Importante",
+            body=mensaje_aleatorio,
         ),
-        topic="actividades",
+        topic="actividades"
     )
-    response = messaging.send(message)
-    return {"message": "Message sent to topic /actividades", "response": response}
+    
+    # Enviar el mensaje a través de FCM
+    try:
+        response = messaging.send(message)
+        return {"message": "Message sent to topic /actividades", "response": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

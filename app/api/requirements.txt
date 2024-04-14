@@ -9,3 +9,6 @@ Unidecode
 psycopg2
 passlib[bcrypt]
 python-jose[cryptography]
+firebase-admin==6.5.0
+google-auth
+apscheduler

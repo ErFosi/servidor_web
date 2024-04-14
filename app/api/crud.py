@@ -7,6 +7,7 @@ from fastapi import HTTPException
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str):
+    print(pwd_context.hash(password))
     return pwd_context.hash(password)
 
 def verify_password(plain_password, hashed_password):

@@ -16,6 +16,7 @@ def get_db():
         db.close()
 
 
+
 SECRET_KEY = os.getenv("SECRET_KEY", "un_valor_por_defecto_secreto")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
