@@ -88,9 +88,7 @@ def get_db():
 def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     return crud.crear_usuario(db=db, usuario=usuario)
 
-@app.get("/usuarios/", response_model=List[Usuario])
-def leer_usuarios(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.obtener_usuarios(db, skip=skip, limit=limit)
+
 
 @app.post("/actividades/", response_model=Actividad)
 def crear_actividad(
@@ -98,10 +96,6 @@ def crear_actividad(
     db: Session = Depends(get_db),
     usuario_actual: Usuario = Depends(obtener_usuario_actual)):
     return crud.crear_actividad(db=db, actividad=actividad, id_usuario=usuario_actual.id)
-
-@app.get("/actividades/", response_model=List[Actividad])
-def leer_actividades(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.obtener_actividades(db, skip=skip, limit=limit)
 
 
 @app.get("/mis_actividades/",tags=["Sync"], response_model=List[Actividad])
@@ -119,10 +113,6 @@ def crear_ubicacion(
     usuario_actual: Usuario = Depends(obtener_usuario_actual)):
     return crud.crear_ubicacion(db=db, ubicacion=ubicacion, id_actividad=usuario_actual.id)
 
-
-@app.get("/ubicaciones/", response_model=List[Ubicacion])
-def leer_ubicaciones(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.obtener_ubicaciones(db, skip=skip, limit=limit)
 
 
 @app.post("/token",tags=["Oauth"], response_model=TokenConUsuario)
